@@ -28,9 +28,6 @@ class GeoDisp(om.ExplicitComponent):
 
     def compute(self,inputs,outputs):
         outputs['x_aero_unmasked'] = inputs['x_aero0_unmasked'] + inputs['u_aero']
-        if self.comm.rank == 0:
-            print(inputs['x_aero0_unmasked'][-15:])
-            print(outputs['x_aero_unmasked'][-15:])
 
     def compute_jacvec_product(self,inputs,d_inputs,d_outputs,mode):
         if mode == 'fwd':

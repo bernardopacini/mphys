@@ -74,6 +74,9 @@ class CouplingAeroStructural(CouplingGroup):
             masker = MaskedConverter(input=mask_input, output=[mask_output_mesh, mask_output_prop], mask=[mesh_mask, prop_mask], distributed=True, init_output=0.0)
             self.mphys_add_subsystem('masker', masker)
 
+        prop_coupling = PropCouplingComp()
+        self.mphys_add_subsystem('prop_coupling', prop_coupling)
+
         self.mphys_add_subsystem('aero', aero)
 
         # TEMPORARY --- Adding Masker for DAFoam
@@ -90,3 +93,39 @@ class CouplingAeroStructural(CouplingGroup):
         self.linear_solver = om.LinearBlockGS(maxiter=25, iprint=2,
                                               atol=1e-8, rtol=1e-8,
                                               use_aitken=True)
+
+# TEMPORARY --- Adding for DAFoam propeller coupling
+class PropCouplingComp(om.ExplicitComponent):
+    def setup(self):
+        self.add_input("dv_prop_in", shape_by_conn=True, tags=['mphys_coupling'])
+        self.add_input("x_prop", shape_by_conn=True, distributed=True, tags=['mphys_coupling'])
+        self.add_output("actuator", shape_by_conn=True, tags=['mphys_coupling'])
+
+    def compute(self, inputs, outputs):
+        actuator = np.zeros(9)
+        if self.comm.rank == 0:
+            actuator[3:] = inputs["dv_prop_in"][3:]
+            actuator[:3] = inputs["x_prop"][:3]
+        self.comm.Bcast(actuator, root=0)
+
+        outputs["actuator"] = actuator
+
+    def compute_jacvec_product(self, inputs, d_inputs, d_outputs, mode):
+        # NEEDS TO BE PARALLELIZED
+        if mode == 'fwd':
+            if 'actuator' in d_outputs:
+                if 'dv_prop_in' in d_inputs:
+                    d_outputs['actuator'][3:] += d_inputs["dv_prop_in"][3:]
+                if 'x_prop_in' in d_inputs:
+                    temp = np.zeros(3)
+                    if self.comm.rank == 0:
+                        temp[:] = d_inputs["x_prop"][:3]
+                    self.comm.Bcast(temp, root=0)
+                    d_outputs['actuator'][:3] += temp
+        elif mode == 'rev':
+            if 'actuator' in d_outputs:
+                if 'dv_prop_in' in d_inputs:
+                    d_inputs['dv_prop_in'][3:] += d_outputs['actuator'][3:]
+                if 'x_prop_in' in d_inputs:
+                    if self.comm.rank == 0:
+                        d_inputs['x_prop'][:3] += d_outputs['actuator'][:3]
