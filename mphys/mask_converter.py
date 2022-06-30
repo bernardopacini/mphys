@@ -49,8 +49,6 @@ class MaskedConverter(om.ExplicitComponent):
 
         self.add_input(input.name, shape=input.shape, tags=input.tags, distributed=distributed)
 
-        # self.add_input(input.name, shape_by_conn=True, tags=input.tags, distributed=distributed)
-
         if isinstance(output, list):
             if len(output) != len(mask):
                 raise ValueError("Output length and mask length not equal")
