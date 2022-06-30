@@ -2,8 +2,6 @@ import openmdao.api as om
 from .coupling_group import CouplingGroup
 from .geo_disp import GeoDisp
 
-from mphys import MaskedConverter, UnmaskedConverter, MaskedVariableDescription
-
 
 class CouplingAeroStructural(CouplingGroup):
     """
