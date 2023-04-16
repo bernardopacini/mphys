@@ -14,17 +14,17 @@ class GeoDisp(om.ExplicitComponent):
 
         self.add_input('x_aero0', shape_by_conn=True,
                                   distributed=True,
-                                  desc='aerodynamic surface with geom changes',
-                                  tags=['mphys_coordinates'])
+                                  desc='aerodynamic surface with geom changes',)
+                                #   tags=['mphys_coordinates'])
         self.add_input('u_aero',  shape_by_conn=True,
                                   distributed=True,
-                                  desc='aerodynamic surface displacements',
-                                  tags=['mphys_coupling'])
+                                  desc='aerodynamic surface displacements',)
+                                #   tags=['mphys_coupling'])
 
         self.add_output('x_aero', shape=local_size,
                                   distributed=True,
-                                  desc='deformed aerodynamic surface',
-                                  tags=['mphys_coupling'])
+                                  desc='deformed aerodynamic surface',)
+                                #   tags=['mphys_coupling'])
 
     def compute(self,inputs,outputs):
         outputs['x_aero'] = inputs['x_aero0'] + inputs['u_aero']
