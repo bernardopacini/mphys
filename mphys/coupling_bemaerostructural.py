@@ -39,7 +39,7 @@ class CouplingBEMAeroStructural(CouplingGroup):
         input = []
         input.append(SummationVariableDescription(name="f_struct_bem"))
         input.append(SummationVariableDescription(name="f_struct_cfd"))
-        output = SummationVariableDescription(name="f_struct", tags=["mphys_coupling"])
+        output = SummationVariableDescription(name="f_struct")
         summation = Summation(input=input, output=output, distributed=True, init_output = 0.0)
 
         self.mphys_add_subsystem('bem_disp_xfer', bem_disp_xfer)
